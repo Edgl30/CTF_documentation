@@ -1,0 +1,143 @@
+picoCTF Web Tools
+
+
+
+------------
+|| Tools  ||
+------------
+
+------------------------------------------------------------------------------------
+	----------------
+	|| Inspector: ||	
+	----------------
+------------------------------------------------------------------------------------
+|  |  Elementos: Atributos tipo onclick o similares para inyecciones JS.	|  | 
+|  |  Consola: Código JS, para manipular datos o identificar errores.		|  |
+|  |                                                                            |  |
+|  |  Red: Se pueden observar las peticiones, parámetros			|  |
+|  |		identificar vulnerabilidades como inyecciones SQL o XSS		|  |
+|  |  Aplicación: Se pueden ver la cookies y el almacenamiento local		|  |
+|  |  		util para entender el manejo de sesiones y persistencia		|  |
+|  |  Seguridad: Certificados SSL y seguridad general, así como 		|  |
+|  |		configuración HTTPS						|  |
+|  |  Fuentes: Ver y depurar archivos JS. buscar malware etc..			|  |
+|  |  Auditoria de rendimiento: 						|  |
+|  |		Algunas herramientas ofrecen auditorias y seguridad		|  |
+|  |				                				|  |
+------------------------------------------------------------------------------------
+	--------------------------------
+	|| Archivos de configuración: ||	
+	--------------------------------
+------------------------------------------------------------------------------------
+|  |  Servidores:							  	|  | 
+|  |  	Apache: .htaccess							|  |
+|  | 	Nginx: nginx.conf							|  |
+|  | 	IIS: web.config								|  |
+|  |										|  |
+|  |  Aplicación:								|  |
+|  |	PHP: config.php | composer.json						|  |
+|  |	Python: settings.py							|  |
+|  | 	JavaScript: package.json						|  |
+|  | 	Go: app.yaml								|  |
+|  |										|  |
+|  |  Entorno:  .env								|  |
+|  |  SEO: robots.txt								|  |
+|  |  macOS: .DS_Store
+|  |				                				|  |
+------------------------------------------------------------------------------------
+	--------------
+	|| Cookies: ||	
+	--------------
+------------------------------------------------------------------------------------
+|  |  Navegador:								|  | 
+|  |  	DevTools: herramientas de desarrollo en los navegadores.		|  |
+|  |	Extensiones: Chrome-EditThisCookie  Otros-Cookie Manager    		|  |
+|  | 										|  |
+|  |  Interceptores de trafico:							|  |
+|  | 	Burpsuite: en el costado derecho encontramos las cookies y en ctrl + r  |  |
+|  | 		podemos modificarlas.						|  |
+|  |	OWASP ZAP: Herramienta para pruebas de seguridad.			|  |
+|  |  	Fiddler: Un proxy que permite capturar el tráfico HTTP/HTTPS		|  |
+|  |										|  |
+------------------------------------------------------------------------------------
+	----------------
+	|| BurpSuite: ||	
+	----------------
+------------------------------------------------------------------------------------
+|  |  Interceptar Trafico: Pestaña proxy opción "intercept is on"		|  | 
+|  |                                                                            |  |
+|  |  Modificar Solicitudes: Al interceptar se pueden modificar			|  |
+|  |		"Forward" enviar  --  "Drop" eliminar				|  |
+|  |										|  |
+|  |  Ver Respuestas: Se puede ver la respuesta n "HTTP History"	        |  |
+|  |										|  |
+|  |  Scanner: Version pro, para ver vulnerabilidades	                	|  |
+|  |										|  |
+|  |  Herramientas Adicionales:	                				|  |
+|  |	Repeater: Para enviar solicitudes repetidamente Ctrl + R	        |  |
+|  |	Intruder: Para ataques automatizados, fuerza bruta o inyecciones	|  |
+|  |	Decoder: Para decodificar y decodificar datos			        |  |
+|  |				                				|  |
+------------------------------------------------------------------------------------
+	-----------------
+	|| ReverShell: ||	
+	-----------------
+------------------------------------------------------------------------------------
+|  | 	Web: https://www.revshells.com/ 					|  | 
+|  |  										|  |
+|  |				                				|  |
+------------------------------------------------------------------------------------
+	--------------------
+	|| Inyección XML: ||	
+	--------------------
+------------------------------------------------------------------------------------
+|  |  Burpsuite | OWASP ZAP  							|  | 
+|  |  XMLStarlet: trabajar con XML.						|  |
+|  |  		Puedes usarla para manipular y crear documentos XML		|  |
+|  |  Recursos:									|  |
+|  |  	https://owasp.org/www-project-web-security-testing-guide/latest/ 	|  |
+|  |  	4-Web_Application_Security_Testing/07-Input_Validation_Testing/		|  |
+|  | 	07-Testing_for_XML_Injection						|  |
+|  |  										|  |
+|  |  	https://github.com/payloadbox/xxe-injection-payload-list		|  |
+|  |                      							|  |
+------------------------------------------------------------------------------------
+	--------------------
+	|| Inyección SQL: ||	
+	--------------------
+------------------------------------------------------------------------------------
+|  |  Burpsuite | OWASP ZAP  							|  | 
+|  |  sqlmap: Herramienta para automatizar pruebas de inyección SQL		|  | 
+|  |  										|  |
+|  |  Recursos:									|  |
+|  |	https://owasp.org/www-community/attacks/SQL_Injection			|  |
+|  |										|  |
+|  |	https://github.com/payloadbox/sql-injection-payload-list		|  |
+|  |										|  |
+------------------------------------------------------------------------------------
+	------------------
+	|| Directorios: ||	
+	------------------
+------------------------------------------------------------------------------------
+|  | 	GoBuster								|  | 
+|  |  	gobuster dir -u http://<host> -w /<path>/<diccionario>			|  |
+|  |	-x php,html,txt   -x Es util para buscar archivos con cierta extensíon	|  |
+|  |				                				|  |
+------------------------------------------------------------------------------------
+	-------------------
+	|| Diccionarios: ||	
+	-------------------
+------------------------------------------------------------------------------------
+|  | 	Rockyou   -  Diccionario muy extenso y reconocido			|  | 
+|  |  	Wordlist  -  Herramienta para almacenar diccionarios, con diccionarios  |  |
+|  |			propios por defecto 					|  |
+|  |				                				|  |
+------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+

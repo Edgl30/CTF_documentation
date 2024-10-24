@@ -1,0 +1,369 @@
+picoCTF General_Skills
+
+
+------------
+|| easy   ||
+------------
+
+
+------------------------------------------------------Static ain't always noise
+
+
+tenemos que descargar los archivos, ejecutar el script que descifra un binario que pasamos como argumento y nos crea un nuevo archivo con la flag
+
+
+
+
+------------------------------------------------------Nice Netcat...
+
+
+consiste en conectarme por netcat y pasar lso números de ascii a la flag
+
+pagina de conversion: https://www.duplichecker.com/ascii-to-text.php
+
+
+
+
+------------------------------------------------------Obedient Cat
+
+
+solo tenemos que hacerle cat al archivo
+
+
+
+
+------------------------------------------------------2Warm
+
+
+tenemos que convertir un numero a binario
+
+
+
+
+------------------------------------------------------First Grep
+
+
+tenemos que hacer un grep en un archivo
+cat file_p | grep "pico"
+
+
+
+
+------------------------------------------------------Bases
+
+
+tenemos que desencriptar de base 64
+
+
+
+
+------------------------------------------------------Warmed Up
+
+
+Tenemos que cambiar de base un numero
+
+
+
+
+------------------------------------------------------Strings It
+
+
+consiste en utilizar la herramienta strings, enviarle el binario que descargamos
+y filtrar para q me traiga el string de la flag
+
+strings ./strings | grep 'pico'
+
+
+
+
+------------------------------------------------------What's A Net Cat?
+
+
+tenemos que conectarnos por nectat a el dominio
+
+
+
+
+------------------------------------------------------Lets Warm Up
+
+
+tenemos que convertir el numero hexadecimal a decimal y obtener 
+la letra q le corresponde
+
+
+
+
+------------------------------------------------------PW Crack 1
+
+
+obsermabos el descifrador y logramos identificar que la contraseña que ingresamos debe
+ser igual a: 691d
+
+
+
+
+------------------------------------------------------PW Crack 2
+
+
+descargamos los archivos en el mismo directorio y posteriormente revisamos el cofigo .py
+y  obtenemos esta comprobación 
+
+if( user_pw == chr(0x33) + chr(0x39) + chr(0x63) + chr(0x65) ):
+
+
+entonces aquí lo importante es que comparamos nuestra entrada con estos chr consecutivos,
+si miramos mas a profundidad, notamos que es código ascci formando un string, si tomamos 
+estas posiciones y las convertimos tenemos: 39ce
+y esta seria la contraseña para poner en funcionamiento el decifrador
+
+
+
+
+
+------------------------------------------------------HashingJobApp
+
+
+tenemos que utilizar el algoritmo MD5 para encryptar algunas frases
+en ubuntu:
+echo -n "frase" | md5sum
+
+
+con python:
+
+import hashlib
+
+# Mensaje de entrada
+message = "Hello, World!"
+
+# Crear un objeto hash MD5
+md5_hash = hashlib.md5()
+
+# Actualizar el objeto hash con el mensaje
+md5_hash.update(message.encode())
+
+# Obtener el valor hash en hexadecimal
+hash_value = md5_hash.hexdigest()
+
+print(f"MD5 hash de '{message}': {hash_value}")
+
+
+
+
+------------------------------------------------------Glitch Cat
+
+
+Tenemos que completar la flag, con los elementos en ascii y completarlo con el resto de la cadena
+
+
+
+
+------------------------------------------------------Fixme1.py
+
+
+tenemos que arreglar el archivo .py, solo tiene un salto de linea mal puesto
+
+
+
+
+------------------------------------------------------Fixme2.py
+
+
+tenemos que arreglar el archivo .py, solo tiene unos saltos de linea mal puestos y 
+un if mal definido
+
+
+
+
+------------------------------------------------------Convertme.py
+
+
+tenemos que convertir decimales a binario
+
+
+
+
+------------------------------------------------------Codebook
+
+
+Solo tenemos que corre el código .py
+
+
+
+
+------------------------------------------------------Magikarp Ground Mission
+
+
+Tenemos que conectarnos por ssh y navegar por carpetas como nos indiquen
+
+
+
+
+------------------------------------------------------Tab, Tab, Attack
+
+
+buscamos el archivo y miramos su tipo con file, notamos que es un ejecutable, le damos permisos, chmod y lo ejecutamos.
+
+
+
+
+------------------------------------------------------Wave A Flag
+
+
+tenemos que ejecutar un comando, nos indica que le enviemos una flag -h, cuando lo hacemos
+recibimos la flag
+
+
+
+
+------------------------------------------------------Python Wrangling
+
+
+el código fuente del .py esta mal, tnemos que modificarlo, lo ejecutamos y enviamos la flag
+con el comando
+
+
+python3 ./ende.py -d flag.txt.en
+
+nos pedirá una contraseña y es la del archivo pw
+
+
+
+
+------------------------------------------------------Binary Search
+
+
+Aqui lo que tenemos que hacer es utilizar una busqueda binaria, que consiste
+en dividir en la mitad el total y este se volvera el nuevo total, ahi el 
+codigo nos dice si el numero es mayor o menor, si nos dice menor le sumamos la mitad 
+del nuevo total y si es mayor se le suma a este, en ambos casos la nueva mitad
+es el nuevo total.
+
+
+
+
+------------------------------------------------------Time Machine
+
+
+consiste en descargar el archivo, notara qu etiene un .git, lo que nos indica que debamos navegar a la ruta y 
+ejecutamas un git log para revisar los commits que se han realizado y ahi encontraremos las flag
+
+
+
+
+------------------------------------------------------Super SSH
+
+
+solo tenemos que crear una conexion con ssh Usuario@HostOIp -p Puerto y te arroja la flag
+
+
+
+
+------------------------------------------------------Endianness
+
+
+consiste en la representación endian de una cadena de texto, ya se big o little
+que es pasarlo a formato acssi y colocarlo al derecho big y al reves little
+
+
+
+
+------------------------------------------------------Commitment Issues
+
+
+Consiste en descargar el archivo y mirar los commit, posteriormente regresar al
+commit que contiene la bandera, con git checkout
+
+
+
+
+------------------------------------------------------Collaborative Development
+
+
+consiste en haer merge en cad una de las ramas en un código de git, resolviendo
+los conflictos de cada una y asi lograr unir la flag completa.
+
+print("picoCTF{t3@mw0rk_", end='')
+print("m@k3s_th3_dr3@m_", end='')
+print("w0rk_7ae8dd33}")
+
+picoCTF{t3@mw0rk_m@k3s_th3_dr3@m_w0rk_7ae8dd33}
+
+
+
+
+------------------------------------------------------Blame Game
+
+
+tenemos que mirar los colaboradores del proyecto git:
+
+ git shortlog -sn
+   501  picoCTF
+     1  picoCTF{@sk_th3_1nt3rn_ea346835}
+
+y asi obtendremos la flag
+
+
+
+
+------------------------------------------------------BinHexa
+
+
+consiste en hacer operaciones con binarios, com desplazamientos, sumas multiplicaciones, or entre otras.
+
+
+
+
+------------------------------------------------------Repetitions
+
+
+Consiste en una falg encriptada y tenemos que descifrarlo con Base64 hasta encontrar la flag
+
+
+
+
+------------------------------------------------------Big Zip
+
+
+Descomprimimos un zip y buscamos en todos los archivos algo que nos interese, en este
+caso usamos el comando:
+
+
+grep -r "pico" ./big-zip-files
+
+Esto nos arrojara la ruta de donce esta la cadena y la linea completa
+
+./big-zip-files/folder_pmbymkjcya/folder_cawigcwvgv/folder_ltdayfmktr/folder_fnpfclfyee/whzxrpivpqld.txt:information on the record will last a billion years. Genes and brains and books encode picoCTF{gr3p_15_m4g1c_ef8790dc}
+
+
+
+
+------------------------------------------------------First Find
+
+
+se puede utilizar el comando anterior, aunque nos diga que busquemos una archivo
+
+
+picoCTF{f1nd_15_f457_ab443fd1}
+
+./files/adequate_books/more_books/.secret/deeper_secrets/deepest_secrets/uber-secret.txt:picoCTF{f1nd_15_f457_ab443fd1}
+./files/14789.txt.utf-8:brassa un picotin d'orge_. Comme depuis une demi-heure environ c'était
+
+
+
+si embargo, busquemos el archivo:
+
+usemos este comando:
+
+find ~ -name "uber-secret.txt"
+
+
+
+/home/darkbunny/files/adequate_books/more_books/.secret/deeper_secrets/deepest_secrets/uber-secret.txt
+
+
+
+
+------------------------------------------------------Runme.py
+
+
+solo tenemos que descargar el .py y obtener la flag

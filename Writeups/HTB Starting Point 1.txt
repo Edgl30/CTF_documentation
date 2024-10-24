@@ -1,0 +1,157 @@
+HTB Starting Point 1
+
+1 -------------------------------------------------------Meow
+-----------------
+|| enumeración ||
+-----------------
+
+comprobar la conexión con un: ping <ip>
+
+escaneo básico: sudo nmap -sV <ip>    ''' muestra puertos y servicios '''
+	Encontramos el puerto 23 abierto, que es el puerto de telnet
+
+-----------------
+|| explotación ||
+-----------------
+
+	Nos intentamos conectar con: telenet <ip>
+		ingresamos con el usuario root y sin contraseña
+	
+
+con ls vemos una flag.txt y con cat flag.txt vemos su contenido:
+	esta es la flag de usuario
+
+
+
+
+2 -------------------------------------------------------Fawn
+
+El FTP (File Transfer Protocol) es un protocolo de red utilizado para transferir archivos entre un cliente y un servidor a través de Internet. Funciona mediante el establecimiento de una conexión entre el cliente y el servidor, permitiendo la subida y descarga de archivos de manera eficiente. En ciberseguridad, FTP es importante porque, aunque es útil para la gestión de archivos, su uso inseguro puede exponer datos sensibles a ataques como la interceptación o el acceso no autorizado. Por ello, se recomienda utilizar versiones seguras, como FTPS o SFTP, que cifran la transmisión de datos y proporcionan una capa adicional de protección.
+
+-----------------
+|| enumeración ||
+-----------------
+
+comprobar la conexión con:  ping <ip>
+
+escaneo básico: sudo nmap -sV <ip>
+	Encontramos el puerto 21 abierto que es el puerto ftp
+
+
+-----------------
+|| explotación ||
+-----------------
+
+Ingresamos a ftp con: ftp <ip>
+	ingresamos com usuario anonymous y contraseña vacia
+
+con help: vemos los comandos ftp disponibles, Tambien man
+con ls podemos ver los directorios y Tambien los estados de los mismos
+
+	200 : PORT command successful. Consider using PASV.
+	150 : Here comes the directory listing.
+	226 : Directory send OK.
+
+con el comando: get flag.txt      ''' descargamos el archivo '''
+	y obtenemos la flag
+
+
+
+
+3 -------------------------------------------------------Dancing
+
+SMB (Server Message Block) es un protocolo de red que permite el acceso compartido a archivos, impresoras y otros recursos en una red. Facilita la comunicación entre sistemas operativos, principalmente en entornos Windows, al permitir que los clientes accedan a archivos en servidores de manera sencilla. En ciberseguridad, SMB es crucial porque, aunque proporciona conveniencia en la compartición de recursos, también ha sido un vector de ataques, como el ransomware WannaCry, que explotó vulnerabilidades en el protocolo. Por lo tanto, es fundamental implementar medidas de seguridad, como la segmentación de redes y el uso de autenticación fuerte, para mitigar riesgos asociados al uso de SMB.
+
+-----------------
+|| enumeración ||
+-----------------
+
+comprobar la conexión con:  ping <ip>
+
+escaneo básico: sudo nmap -sV <ip>
+	encontramos 445 abierto, que es el protocolo SMB
+	Tambien encontramos el 135 msrpc y 139 netbios-ssn
+
+
+-----------------
+|| explotación ||
+-----------------
+
+instalamos smbclient con: sudo apt install smbclient
+
+la autenticación siempre necesita un nombre de usuario, si no lo asignamos, toma el de nuestro dispositivo
+
+nos conectamos por smb para ver los archivos almacenados con: smbclient -L <ip>
+	nos arroja :
+		ADMIN$: los recursos compartidos administrativos son recursos compartidos de red ocultos creados por la familia de sistemas operativos Windows NT que permiten a los 			administradores de sistemas tener acceso remoto a cada volumen de disco en un sistema conectado a la red. Estos recursos compartidos no se pueden eliminar de forma 			permanente, pero se pueden deshabilitar.
+
+		C$: recurso compartido administrativo para el volumen de disco C:\. Aquí es donde se aloja el sistema operativo.
+
+		IPC$: recurso compartido de comunicación entre procesos. Se utiliza para la comunicación entre procesos a través de canales con nombre y no es parte del sistema de 			archivos.
+
+		WorkShares: recurso compartido personalizado.
+
+intentamos ingresar a cada uno de los recursos anteriores con: smbclient \\\\<ip>\\WorkShares
+	Donde WorkShares es el unico que nos permite ingresar sin contraseña
+
+utilizamos ls para ver los archivos
+	Encontramos dos directorios y en cada uno un archivo, los descargamos en nuestro dispositivo con get y salimos con exit
+
+obtuvimos una flag y unas notas estas ultimas no son utiles para nosotros
+
+
+
+
+4 -------------------------------------------------------Redeemer
+
+Redis es un sistema de almacenamiento en memoria que actúa como base de datos, caché y broker de mensajes, conocido por su alta velocidad y eficiencia en el manejo de datos. Utiliza una estructura de datos en clave-valor, lo que lo hace ideal para aplicaciones que requieren un acceso rápido a información temporal. En ciberseguridad, Redis es importante porque, si bien proporciona rendimiento, su configuración incorrecta puede llevar a vulnerabilidades, como acceso no autorizado a datos sensibles. Es fundamental implementar prácticas de seguridad, como autenticación, restricciones de IP y cifrado, para proteger las instancias de Redis y los datos que almacenan.
+
+-----------------
+|| enumeración ||
+-----------------
+
+primero comprobamos el server, hacemos: ping <ip>
+
+
+escaneo basico: nmap -p- -sV <ip>
+	-sV para servicios y -p- para todos los puertos
+
+	Encontramos abierto el puerto 6379 que suele estar relacionado on Redis
+
+
+-----------------
+|| explotación ||
+-----------------
+
+Instalamos las herramientas de Redis: sudo apt install redis-tools
+
+Para conectarnos mediante redis utilizamos redis-cli -h <ip>
+
+Utilizamo el comando info para observar las especificaciones de nuestro redis
+	Notamos en la seccion de keyspace la cantidad de bases de datos y de llaves
+
+	#keyspace
+	db0:keys=4,expires=0,avg_ttl=0
+
+	notamos que hay una bd y 4 llaves, vamos a las bd con: select 0
+	y listamos las llaves que tiene con: keys *
+	obtenemos 1) "numb" 2) "flag" 3) "stor" 4) temp
+
+	obtenemos la flag con: get flag
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

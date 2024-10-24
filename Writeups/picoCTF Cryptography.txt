@@ -1,0 +1,73 @@
+picoCTF Cryptography
+
+
+------------
+|| easy   ||
+------------
+
+
+1 ------------------------------------------------------13
+
+Hacer ROT-13
+
+
+
+
+2 ------------------------------------------------------Mod 26
+
+
+tenemos que descifrar la flag con cifrado ROT13
+
+echo "cvpbPGS{arkg_gvzr_V'yy_gel_2_ebhaqf_bs_ebg13_MAZyqFQj}" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+
+
+
+
+3 ------------------------------------------------------The Numbers
+
+
+consiste en reemplazar por letras del alfabeto
+
+16 9 3 15 3 20 6 { 20 8 5 14 21 13 2 5 18 19 13 1 19 15 14 }
+
+
+picoCTF{thenumbersmason}
+
+
+
+
+4 ------------------------------------------------------Interencdec
+
+
+Consite en decifrar un mensaje, la cadena original es:
+
+YidkM0JxZGtwQlRYdHFhR3g2YUhsZmF6TnFlVGwzWVROclgyZzBOMm8yYXpZNWZRPT0nCg==
+
+al pasarla por Base64 decoding o -d obtenemos:
+
+d3BqdkpBTXtqaGx6aHlfazNqeTl3YTNrX2g0N2o2azY5fQ==
+
+al pasarlo nuevamente por Base 64, obtenemos:
+
+wpjvJAM{jhlzhy_k3jy9wa3k_h47j6k69} 
+
+entendiendo que wpjvJAM significa picoCTF, entendemos que existe un espacio de 20 entre
+las palabras, lo que significa que debemos mover 20 posiciones todas las letras, como un
+cifrado cesar, al completarlo, obtenemos:
+
+
+picoCTF{caesar_d3cr9pt3d_a47c6d69}
+
+
+
+
+------------
+|| medium ||
+------------
+
+
+------------------------------------------------------
+------------------------------------------------------
+------------------------------------------------------
+------------------------------------------------------
+------------------------------------------------------

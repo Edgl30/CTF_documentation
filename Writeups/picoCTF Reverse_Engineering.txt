@@ -1,0 +1,104 @@
+picoCTF Reverse_Engineering
+
+
+------------
+|| easy   ||
+------------
+
+
+1 ------------------------------------------------------vault-door-training
+
+
+No me acuerdo, creo que tenia que mirar el archivo .jar
+
+
+
+
+2 ------------------------------------------------------Transformation
+
+
+
+encoded_flag = '灩捯䍔䙻ㄶ形楴獟楮獴㌴摟潦弸弰㑣〷㘰摽'
+flag = ""
+for i in range(0, len(encoded_flag)):
+    character1 = chr((ord(encoded_flag[i]) >> 8))
+    character2 = chr(encoded_flag[i].encode('utf-16be')[-1])
+    flag += character1
+    flag += character2
+
+print("Flag: " + flag)
+
+
+consiste en decodificar creando un script en python creando la transformación que nos piden.
+
+
+
+
+------------
+|| medium ||
+------------
+
+
+------------------------------------------------------WeirdSnake
+
+
+Tenemos un archivo que al leerlo, nos encontramos que es una forma distinta de escribir un archivo de python
+tenemos que minusiosamente pasar parámetro por parámetro a a un nuevo archivo con su significado y asi poder construir el script real
+aquí dejo una parte del archivo para no hacerlo tan extenso
+
+linas 9 y 11:
+
+ 9         120 LOAD_CONST              36 (<code object <listcomp> at 0x7f5ef6665d40, file "snake.py", line 9>)
+            122 LOAD_CONST              37 ('<listcomp>')
+            124 MAKE_FUNCTION            0
+            126 LOAD_NAME                1 (key_str)
+            128 GET_ITER
+            130 CALL_FUNCTION            1
+            132 STORE_NAME               2 (key_list)
+
+ 11     >>  134 LOAD_NAME                3 (len)
+            136 LOAD_NAME                2 (key_list)
+            138 CALL_FUNCTION            1
+            140 LOAD_NAME                3 (len)
+            142 LOAD_NAME                0 (input_list)
+            144 CALL_FUNCTION            1
+            146 COMPARE_OP               0 (<)
+            148 POP_JUMP_IF_FALSE      162
+
+como debe quedar:
+
+# Generar una lista de valores ASCII a partir de la clave
+key_list = [ord(char) for char in key_str]
+
+# Asegurarse de que key_list tenga al menos el mismo número de elementos que input_list
+while len(key_list) < len(input_list):
+
+
+
+
+------------------------------------------------------Packer
+
+
+utilizamo upx para descomprimir nuestro binario: upx -d binario original
+para posteriormente abrirlo von la herramienta de depuracion: binaryninja y examinando el script encontramos la flag
+
+Password correct, please see flag: 7069636f4354467b5539585f556e5034636b314e365f42316e34526933535f33373161613966667d
+
+
+
+
+------------------------------------------------------
+
+
+picoCTF{wELF_d0N3_mate_4563eadbf}
+
+
+4563eadbf
+
+45634e33adb53a
+563e5aeedbf6ed
+
+
+------------------------------------------------------
+------------------------------------------------------
+

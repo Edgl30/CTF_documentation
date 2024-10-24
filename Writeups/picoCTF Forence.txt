@@ -1,0 +1,584 @@
+picoCTF Forence
+
+
+
+------------
+|| tools  ||
+------------
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+|
+|
+|		Virus:	
+|			Buscar virus en archivos:     https://www.virustotal.com/gui/home/search    ''' Revisar Virus '''
+|
+|		QR:     lector QR online:  https://scanqr.org/#scan                                 ''' Escanear QRs '''
+|
+|               Base64:      
+|			descifrar: echo '<frase>' | base64 -d      cifrar: echo '<frase>' | base64
+|		
+|		Pasar archivos:
+|			cp '<path>\archivo' '\\wsl$\<Nombre Distro>\home\<usuario_linux>\<path>'    ''' Pasar Local a WSL '''
+|			cp /<path>/archivo.txt /mnt/c/Users/<Usuario Win>/<path>                    ''' Pasar WSL a local '''  
+|
+|		Herramientas:
+|			Exiftool | ImageMagick | Jhead | ExifCleaner                                ''' Metadata '''
+|			Ghex     | Hexdump     | Xxd   | dd                                         ''' Representación HEX y ASCII '''
+|			unzip    | gzip -d							    ''' Descomprimir '''
+|			autopsy                                                                     ''' Forense de discos e imágenes '''
+|			wireshark								    ''' Paquetes de red '''
+|			
+|			
+|
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+------------
+|| easy   ||
+------------
+
+
+1 -------------------------------------------------------Scan Surprise
+
+
+Solo debamos conectarnos por ssh: 	ssh -p <puerto> ctf-player@atlas.picoctf.net
+Ingresamos la contraseña
+
+Esto nos arroja un QR con la password, solo tenemos que escanearlo
+
+Podemos buscar si tiene virus en la web [virus total] y escanear su contenido en la web igualmente con [scanqr]
+
+
+
+
+2 -------------------------------------------------------Verify
+
+
+Consiste en un desafío donde tenemos multiples archivos con la contraseña y con un script debemos descubrir cual es la real
+----
+
+descartar por tamaño:
+	ls -lh     /// no funciona por que todos tienen el mismo tamaño
+----
+
+comando recursivo:
+	for archivo in ./files/*; do ./decrypt.sh "$archivo" 2>/dev/null; done | grep -Ev "Error"
+
+	este comando lo que nos permite es generar un bucle para comprobar todos los archivos y filtrar 
+	aquellos que nos dan error.
+----
+
+Script de descifrado:
+	#!/bin/bash
+
+        # Check if the user provided a file name as an argument
+        if [ $# -eq 0 ]; then
+            echo "Expected usage: decrypt.sh <filename>"
+            exit 1
+        fi
+
+        # Store the provided filename in a variable
+        file_name="$1"
+
+        # Check if the provided argument is a file and not a folder
+        if [ ! -f "/home/ctf-player/drop-in/$file_name" ]; then
+            echo "Error: '$file_name' is not a valid file. Look inside the 'files' folder with 'ls -R'!"
+            exit 1
+        fi
+
+        # If there's an error reading the file, print an error message
+        if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 -salt -in "/home/ctf-player/drop-in/$file_name" -k picoCTF; then
+            echo "Error: Failed to decrypt '$file_name'. This flag is fake! Keep looking!"
+        fi
+
+
+	este es el script que debemos pasar por todos los archivos.
+
+
+
+Extraer descifrador:
+	comando que descifra:
+	openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 -salt -in "/home/ctf-player/drop-in/files/00011a60" -k picoCTF
+	Si cambio -d por -e y ahora encripta con los mismo parametros
+
+
+	Tambien podemos extraer el decodificador y colocarle la path del archivo files/00011a60
+	Así podemos entender mejor la encriptación que maneja
+
+	Funcionamiento de la encriptacion:
+		OpenSSL es una biblioteca de software que proporciona herramientas y funciones para implementar criptografía y protocolos 
+		de red seguros, como SSL (Secure Sockets Layer) y TLS (Transport Layer Security).
+
+	Parámetros de openssl:
+		enc: Indica que se va a realizar una operación de encriptación/desencriptación.
+		-d: Indica que se desea desencriptar.
+		-aes-256-cbc: Especifica el algoritmo de encriptación a utilizar (AES en modo CBC con una clave de 256 bits).
+		-pbkdf2: Utiliza PBKDF2 para derivar la clave.
+		-iter 100000: Especifica el número de iteraciones para la derivación de la clave.
+		-salt: Indica que se usará un salt durante el proceso de encriptación.
+		-in: Especifica la ruta del archivo de entrada (el archivo a desencriptar).
+		-k: Especifica la clave para la desencriptación (picoCTF en este caso).
+
+
+
+
+3 -------------------------------------------------------Information
+
+
+Metadata:
+	Tenemos que revisar la metadata de una imagen podemos usar [exiftool] en este caso la constraseña se esconde en la zona de license,
+	tenemos que desencriptarla con Base64 lo pondemos hacer en la web o con el comando:
+		 echo '<frase>' | base64 -d
+
+Eliminar metadata:
+	exiftool -all= <archivo>
+	exiftool -all= -out <nuevo_archivo> <nombre_del_archivo>     ''' Nuevo archivo sin metadata '''
+
+Agregar metadata:
+	exiftool -s -G <archivo.txt>           para ver las etiquetas disponibles y sus datos
+	exiftool -<etiqueta>="<contenido>"     agregamos datos a la etiqueta
+
+
+
+
+4 ------------------------------------------------------CanYouSee
+
+
+Metadata:
+	Descargamos la data y vemos una imagen, al extraer la metadata con la herramienta exiftool y obtenemos 
+	Attribution URL                 : cGljb0NURntNRTc0RDQ3QV9ISUREM05fZDhjMzgxZmR9Cg==
+
+	al desencriptar de Base64 obtenemos la flag
+
+
+
+
+5 ------------------------------------------------------Glory of he Garden
+
+
+Data Hexadecimal:
+	se pueden buscar datos incrustados con: exiftool -a -G -s garden.jpg
+	En este caso no funciono.
+
+	tenemos que revisar la forma hexadecimal de la imagen usamos el comando:
+		ghex <archivo>
+
+	es muy común que la información maliciosa o datos incrustados estén en el final
+
+Incrustar archivo:
+	dd if=<archivo1.dat> of=<archivo2.bin> bs=1 seek=<100 o posición>
+		if=<archivo1.dat>: archivo a incrustar		
+		of=<archivo2.bin>: archivo donde lo incrustaremos
+		bs=1: Incrustar byte por byte
+		seek=<posición>: posición a incrustar
+		Ejemplo:
+			dd if=archivo.txt of=cat.jpg bs=1 seek=100
+			
+			Tenemos que buscar una posición libre, que no afecte el archivo, preferiblemente al final
+			podemos ver el tamaño de archivo con: ls -l cat.png
+
+
+
+
+6 ------------------------------------------------------Secret of the Polygon
+
+
+Revisar formato:
+	con el comando: file <archivo>
+	Sabemos que es un archivo tipo PNG
+
+Cambiar nombre:
+	con el comando: mv <archivo.pdf> <archivo.png>
+	Cambiamos a su formato
+
+Abrir archivo:
+	podemos abrir con la herramienta por default de la distro o intalamos [eog] 
+	Al abrirlo obtenemos el una parte de la flag
+
+Metadata:
+	examinar metadata con: exiftool <archivo> 
+	Warning                         : [minor] Trailer data after PNG IEND chunk
+
+	esto puede indicar que hay un archivo incrustado después del fragmento IEND en el archivo PNG. Esto podría ser intencional, 
+	como cuando se usan técnicas como la esteganografía para ocultar datos dentro del archivo de imagen.
+
+	Acá encontramos que tine un archivo pdf incrustado con:  ghex <archivo>
+	que nos permite ver el archivo en hexadecimal y binario y buscamos lo que le sigue a la fracción IEND
+	extraemos esto y observamos que es un pdf, lo abrimos y obtenemos la segunda parte de la flag
+ 
+Tambien podemos abrir el pdf en windows y obtener la flag 
+
+
+
+
+------------
+|| medium ||
+------------
+
+
+1p------------------------------------------------------Blast from the past 
+
+
+Enviar archivo al server: nc -w 2 mimas.picoctf.net <puerto> < <archivo.jpg>
+
+Recibir respuesta server: nc mimas.picoctf.net 62799
+
+Al enviar el archivo por primera vez, nos indica que las fechas de un campo especifico para esto utilizamos el comando
+	exiftool -<campo>=<"1970:01:01 00:00:00.001" o dato nescesario> <archivo.png>
+
+	Repetimos eso hasta que logremos modificar todos los campos que nos indican
+
+En el ultimo tenemos que hacer algo diferente, ya que existe un metadato oculto que no empata en fecha
+	Para buscarlo utilizamos: ghex <archivo.png> 
+	Un dato interesante es que en los primeros hexadecimales, suelen estar los metadatos, pero este no es el caso,
+	encontramos en el final, donde suelen estar los datos adicionales o incrustados un formato:
+	Image_UTC_Data1700513181420
+	Donde Image_UTC_Data nos indicaria el nombre de una cookie, el Data que es una fecha y UTC (Coordinated Universal Time)
+	1700513181420: Este número es un timestamp en milisegundos.
+
+	Tenemos que cambiarlo a milisegundos, pero este estándar existe exactamente desde el primero de enero de 1970
+	por esto debemos colocarlo en 0, para obtener esta fecha y debemos colocarlo en formato de milisegundos:
+		Image_UTC_Data00001
+
+
+
+
+2p------------------------------------------------------Endianness
+
+
+Lo primero es mirar el file de nuestro archivo:  file challengefile
+	con esto notamos que el resultado es 'Data' nos indica que son binarios que no se pueden identificar
+	
+Metadata:
+	con [exiftool] revisamos la metadata y observamos que aparece el siguiente warring
+	Warning                         : Processing JPEG-like data after unknown 1-byte header
+	
+	Lo anterior nos indica que esta intentando reconocerlo como JPEG pero su encabezado no cuadra
+	Ahora utilizamos [ghex] para revisar los hexadecimales de nuestro archivo
+	Notamos en la cabecera o head:  E0 FF D8 FF
+	En el sastrero o tailer:  D9 FF 01 14
+	si investigamos la head de un jpeg es "FF D8 FF 0E" y el tailer "FF D9"
+	entonces intuimos que cada 8 bits esta al revés
+
+Para invertir cada 8 bits o cada 4 pares de hex:
+	hexdump -v -e '/1 "%02X"' challengefile | fold -w 2 | paste -d ' ' - - - - | awk '{for(i=4;i>=1;i--) printf "%s ", $i; print ""}' 
+
+	hexdump -v -e '/1 "%02X"' challengefile: Mostrar formato hexadecimal [hexdump] sin omitir repetidos [-v] de a un bit por pares [-e '/1 "%02X"'] del archivo changefile.
+	fold -w 2: Divide la salida en líneas de 2 caracteres.
+	paste -d ' ' - - - -: Toma las líneas de la salida anterior y las agrupa de cuatro en cuatro, separándolas con un espacio.
+	awk '{for(i=4;i>=1;i--) printf "%s ", $i; print ""}': Invierte los bits, imprime un espacio y un salto de linea.
+
+salida hexadecimal:
+	hexdump -v -e '/1 "%02X"' challengefile | fold -w 2 | paste -d ' ' - - - - | awk '{for(i=4;i>=1;i--) printf "%s", $", $i; print ""}' | tr -d ' \n' > salida.txt
+	
+	tr -d ' \n' > salida.txt: elimina los saltos de linea y los espacion intermedios, y lo guarda en un archivo salida.txt
+
+conversion a salida binaria:
+	xxd -r -p salida.txt resultado.jpg: -r revierte para convertir en binario, -p para especificar archivo plano hex sin formatos
+
+
+Finalidad:
+	Podemos hacer que los archivos sean corruptos para que no se pueda identificar el malware, para confundir enviando 
+	archivos sin sentido
+	hacer pruebas de vulnerabilidad o en si corromper los archivos puede ser un ataque
+
+
+
+
+3p------------------------------------------------------Dear Diary
+
+
+Tenemos un archivo .gzip, lo descomprimimos con gzip -d <archivo>
+
+Después utilizamos [autopsy] para poder observar los datos de una imagen y sus particiones, buscamos los archivos .txt que se encuentren en este 
+
+
+
+
+4p------------------------------------------------------PcapPoisoning
+
+
+paquete 508:
+	0000   45 00 00 28 00 01 00 00 40 06 64 99 0a fd 00 37   E..(....@.d....7
+	0010   0a fd 00 06 05 39 00 16 00 00 00 0c 00 00 00 0d   .....9..........
+	0020   50 10 20 00 74 36 00 00                           P. .t6..
+
+	Tipo de paquete: Este es un paquete TCP que está siendo enviado desde 10.253.0.55 a 10.253.0.6, usando el puerto 1337 como origen y el puerto 22 como destino (SSH).
+	Propósito: Dado que se trata de un paquete ACK y está dirigido al puerto SSH, es probable que sea parte de un proceso de establecimiento de conexión SSH.
+
+paquete 507:
+	0000   45 00 00 52 00 01 00 00 40 06 c3 90 ac 10 00 02   E..R....@.......
+	0010   0a fd 00 06 00 14 00 15 00 00 00 00 00 00 00 00   ................
+	0020   50 02 20 00 51 45 00 00 70 69 63 6f 43 54 46 7b   P. .QE..picoCTF{
+	0030   50 36 34 50 5f 34 4e 34 4c 37 53 31 53 5f 53 55   P64P_4N4L7S1S_SU
+	0040   35 35 33 35 35 46 55 4c 5f 66 63 34 65 38 30 33   55355FUL_fc4e803
+	0050   66 7d                                             f}
+
+	Tipo de paquete: Este es un paquete TCP SYN que está siendo enviado desde 172.16.0.2 a 10.253.0.6, usando el puerto 20 como origen y el puerto 21 como destino (FTP).
+	Contenido: El paquete incluye una cadena que parece ser una flag picoCTF{P64P_4N4L7S1S_SU55355FUL_fc4e803}
+
+strings trace.pcap | grep 'pico':
+	extraemos los strings con la herramienta [strings] del los paquetes dentro del archivo .pcap y filtramos con grep la frase 'pico'
+	
+
+
+
+5p------------------------------------------------------Hideme
+
+
+xxd -p -c 16 flag_hideme.png | grep -n '49454e44ae426082'         buscar IEND en un archivo
+
+dd if=flag_hideme.png of=datos_extraidos.bin bs=1 skip=2484 		extraer datos después de cierta posición de bits
+
+file datos_extraidos.bin                 notamos que es un zip      
+mv datos_extraidos.bin datos_extraidos.zip                  cambiamos la teminacion
+unzip datos_extraidos.zip				extraemos los archivos 
+
+buscamos en la ruta y encontramos un archivo flag.png y hallamos la flag
+
+
+
+
+6p------------------------------------------------------FindAndOpen
+
+ 
+data en hex:
+
+564768706379427063794230614755676332566a636d56304f69427761574e76513152476531497a4e45524a546b64665445394c5a46383d
+
+data en ascii base64:
+VGhpcyBpcyB0aGUgc2VjcmV0OiBwaWNvQ1RGe1IzNERJTkdfTE9LZF
+
+secreto encontrado:
+This is the secret: picoCTF{R34DING_LOKd_
+
+esta es la contraseña para descomprimir el otro archivo :v
+
+al extraer la flag con unzip, la vemos con cat y obtenemos la flag
+
+
+
+
+7p------------------------------------------------------St3g0
+
+
+Consiste en ocultar en el bit menos significativo en imágenes un bit y así ocultar mensajes
+esto tiene un efecto visual mínimo y nos permite ocultar información, utilizamos la herramienta 
+
+zsteg que compruebas mensajes ocultos con estenografía
+
+
+
+
+8p------------------------------------------------------Sleuthkit Intro
+
+
+Tenemos que mirar el tamaño de las particiones en un disco podemos hacerlo con autopsy o con mmls en los apartados de lenght
+
+
+
+
+9p------------------------------------------------------Sleuthkit Apprentice
+
+
+Tenemos que descargar el archivo, cambiar su nombre a terminación .gz con mv
+descomprimirlo con gzip -d <archivo>
+abrimos la imagen con autopsy
+buscamos un archivo flag en la cuarta partition llamada /3/
+en la seccion de file analysis
+
+
+
+
+10p------------------------------------------------------Redaction Gone Wrong
+
+
+Herramienta para mirar información básica en un PDF 
+pdfinfo archivo.pdf
+
+Herramienta de búsqueda en un pdf
+pdfgrep "pico" Financial_Report_for_ABC_Labs.pdf
+
+
+
+
+11p------------------------------------------------------Packets Primer
+
+
+Tenemos que revisar con wireshark un archivo de red y revisando la data de cada paquete encontramos la flag.
+picoCTF{p4ck37_5h4rk_b9d53765}
+
+
+
+
+12p------------------------------------------------------Operation Orchid (Verificar el desencriptado)
+
+
+buscar en autopsy:
+archivo .enc para buscar una key de encriptado 
+archivo flag para buscar el archivo con la flag encriptada
+
+desencriptamos la clave openssl aes256
+y obtenemos la flag: picoCTF{h4un71ng_p457_5113beab}
+
+
+
+
+------------------------------------------------------Operation Oni
+
+
+Tenemos que revisar el formato de el disco con file: observamos que esta comrimido gzip
+lo descomprimimos: gzip -d
+después con autopsy revisamos la imagen
+recorremos por carpeta y en root/ssh encontramos una clave privada, descargamos el contenido
+le damos permisos con chmod 600
+después nos logueamos con: ssh -i <archivo> -p <puerto> ctf-player@saturn.picoctf.net
+
+
+ 
+
+------------------------------------------------------Lookey here
+
+
+Tenemos que buscar en un archivo con mucho texto, utilizamos:
+cat <archivo> | grep 'pico'
+
+
+
+
+------------------------------------------------------File Types
+
+
+tenemos un sh que esta comprimido, lo descomprimimos u después con la herramienta
+binwalk extraemos el archivo que tiene por dentro 
+
+después tenemos que descomprimir el archivo en como mil tipos de compresión que tenia y
+obtenemos la flag en hexadecimal.
+
+binwalk para analizar y hacer operaciones con binarios
+
+
+
+
+------------------------------------------------------Enhance!
+
+
+Los svg son en si XML, entonces podemos mirar la estructura del archivo y obsevamos que
+esta oculta una información en datos poco representativos.
+picoCTF{3nh4nc3d_aab729dd}
+
+
+
+
+------------------------------------------------------Eavesdrop
+
+buscamos con wireshark en el trafico, encontramos un salted__ que indica un archivo cifrado
+con openssl y después buscamos el método de desencriptación
+
+pero primero guardamos el archivo cifrado en un archivo con:
+ echo "53616c7465645f5f3c4b26e8b8f91e2c4af8031cfaf5f8f16fd40c25d40314e6497b39375808aba186f48da42eefa895" | xxd -r -p > encrypted_file
+
+y ahora usamos el descifrador openssl
+
+openssl des3 -d -in encrypted_file -out file2.txt -k supersecretpassword123
+
+
+
+
+------------------------------------------------------WPA-ing Out
+
+
+utilizamos la herramienta aircrack-ng para intentar crackear la contraseña e la red
+guardada en la captura de trafico wpa-ing_out.pcap
+utilizando el diciionario rockyou.txt
+
+
+aircrack-ng wpa-ing_out.pcap -w /usr/share/wordlists/rockyou.txt
+
+
+
+
+------------------------------------------------------
+
+
+Descomprimimos el archivo gz y obtenemos la imagen, usamos autopsy para buscar en los
+archivos de la imagen y filtramos con la palabra buttom y así encontramos la flag
+   _     _     _     _     _     _     _     _     _     _     _     _     _  
+  / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
+ ( p ) ( i ) ( c ) ( o ) ( C ) ( T ) ( F ) ( { ) ( f ) ( 0 ) ( r ) ( 3 ) ( n )
+  \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/ 
+   _     _     _     _     _     _     _     _     _     _     _     _     _  
+  / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
+ ( s ) ( 1 ) ( c ) ( 4 ) ( t ) ( 0 ) ( r ) ( _ ) ( n ) ( 0 ) ( v ) ( 1 ) ( c )
+  \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/ 
+   _     _     _     _     _     _     _     _     _     _     _  
+  / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \ 
+ ( 3 ) ( _ ) ( f ) ( f ) ( 2 ) ( 7 ) ( f ) ( 1 ) ( 3 ) ( 9 ) ( } )
+  \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/   \_/ 
+
+picoCTF{f0r3ns1c4t0r_n0v1c3_ff27f139}
+
+
+
+
+------------------------------------------------------Matryoshka Doll
+
+
+Tenemos que buscar archivos incrustados, extraerlos, descomprimirlos y luego repetir hasta encontrar nuestra flag
+
+usamos grep para buscar la posición donde finaliza el archivo principal:
+ grep -aob 'IEND' 4_c.jpg
+
+usamos dd para extraer todo después de la poscision que encontramos:
+dd if=3_c.jpg bs=1 skip=79570 of=extraido.bin
+
+usamos unzip para decomprimir lo extraído:
+ mv extraido.bin extraido.zip
+unzip extraido.zip
+
+
+
+
+------------------------------------------------------Disk, disk, sleuth!
+
+
+Utilizamos una herramienta para usar strings en una imagen de disco:
+srch_strings -a "../../picoCTF/dds1-alpine.flag.img" | grep "pico"
+
+para usarla nos vamos a el directorio q cree:
+~/sleuthkit-4.12.1-win32/bin
+
+
+
+
+------------------------------------------------------túnel vision
+
+
+Primero buscamos donde abrir la imagen y vemos que abre en fotopea, recurso web para visualizar imágenes
+
+vemos que la imagen es mas ancha que alta y cambiamos la altura a el mismo ancho
+son los bits 32 01 los cambiamos a 64 03 con ghex 
+
+volvemos a abrir la imagen con fotopea y tenemos la flag
+
+
+
+
+------------------------------------------------------Like 100
+
+
+for x in $(seq 1000 |tac); do tar xvf $x.tar; done
+Tenemos un tar con 1000 tar dentro, lo que hacemos es descomprimir con una secuencia de números de 1000 a 1, y así encontramos la flag
+
+
+
+
+------------------------------------------------------What Lies Within
+
+
+Utilizamos zsteg para sacar los bits ocultos de mi archivo
+y encontramos la flag
+
+
+
